@@ -1,9 +1,11 @@
 <launch>
 
+    <!-- Lanzar el nodo joy_node del paquete joy -->
     <node pkg="joy" type="joy_node" name="joy_node">
     </node>
     
-    <!-- <node pkg="joy_base" type="joy" name="joy_base">
-    </node> -->
+    <!-- Lanzar el nodo joy_node del paquete joy_base -->
+    <node pkg="joy_base" type="joy_base.py" name="joy_base">
+    </node>
     
 </launch>

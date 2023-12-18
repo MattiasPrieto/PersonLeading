@@ -3,10 +3,6 @@
   <arg name="move_forward_only" default="true"/>
   <arg name="map_name" default="map"/>
 
-  <!-- Map Server -->
-  <!-- <node pkg="map_server" type="map_server" name="map_server"
-    respawn="true" args="$(find bringup)/maps/$(arg map_name).yaml"/> -->
-
   <!-- move_base -->
   <include file="$(find bringup)/launch/navigation/move_base.launch">
     <arg name="move_forward_only" value="$(arg move_forward_only)"/>

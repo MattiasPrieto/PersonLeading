@@ -1,32 +1,28 @@
 <launch>
   <!-- Arguments -->
+    <!-- <remap from="scan" to="/p3dx/laser/scan"/>
+    <remap from="cmd_vel" to="/p3dx/cmd_vel"/> -->
     <remap from="scan" to="/p3dx/laser/scan"/>
-    <remap from="cmd_vel" to="/p3dx/cmd_vel"/>
+    <remap from="cmd_vel" to="/RosAria/cmd_vel"/>
     <arg name="use_sim_time"   default="true"/>
-    <!-- <remap from="scan_multi" to="scan"/> -->
     <arg name="robot_real"     default="true"/>
-    <arg name="map_name"       default="map"/>
-    <arg name="worldname"      default="lab"/>
-    <!-- <group if="$(arg robot_real)">
+    <arg name="map_name"       default="stage_real"/>
+    <!-- <arg name="worldname"      default="lab"/> -->
+     
+    <arg name="model_type" default="pioneer3dx" />
 
-      <include file="$(find kobuki_node)/launch/robot_with_tf.launch"/>
-      
-      <node pkg="urg_node" type="urg_node" name="scan"/>
-      
-    </group> -->
+    <param name="robot_description"
+		command="$(find xacro)/xacro '$(find p3dx_description)/urdf/pioneer3dx.xacro'" />
 
-    <!-- <group unless="$(arg robot_real)">
+    <include file="$(find p3dx_control)/launch/control.launch" />
 
-        <include file="$(find jaime_gazebo)/launch/jaime.launch">
-          <arg name="worldname" value="$(arg worldname)"/>
-        </include>
+    <include file="$(find joy_base)/launch/joy.launch"/> 
 
-        <include file="$(find merge_laser)/launch/dp2laser.launch"/>
+    <node pkg="rosaria" type="RosAria" name="p3dx"/>
 
-        <include file="$(find merge_laser)/launch/lasermerger.launch"/>
-
-
-    </group> -->
+    <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+        <remap from="scan" to="/p3dx/laser/scan"/>
+    </node>
     
     <include file="$(find bringup)/launch/localization/localization.launch">
       
@@ -37,6 +33,8 @@
       
       <arg name="map_name" value="$(arg map_name)"/>
     </include>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find p3dx_description)/rviz/visualization.rviz" />
 
 </launch>
  

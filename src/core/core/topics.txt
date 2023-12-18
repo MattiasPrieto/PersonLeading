@@ -1,0 +1,17 @@
+rosrun rosaria RosAria
+
+/RosAria/battery_recharge_state
+/RosAria/battery_state_of_charge
+/RosAria/battery_voltage
+/RosAria/bumper_state
+/RosAria/cmd_vel
+/RosAria/motors_state
+/RosAria/parameter_descriptions
+/RosAria/parameter_updates
+/RosAria/pose
+/RosAria/sonar
+/RosAria/sonar_pointcloud2
+/rosout
+/rosout_agg
+/tf
+
