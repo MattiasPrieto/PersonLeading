@@ -97,10 +97,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</gazebo>
 	
 	<!-- lms100 -->
-	<gazebo reference="lms100">
+	<gazebo reference="laser">
 		<sensor type="ray" name="head_hokuyo_sensor">
 			<pose>0 0 0 0 0 0</pose>
-			<visualize>false</visualize>
+			<visualize>true</visualize>
 			<update_rate>50</update_rate>
 			<ray>
 				<scan>
@@ -125,9 +125,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					<stddev>0.01</stddev>
 				</noise>
 			</ray>
-			<plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+			<plugin name="gazebo_ros_head_hokuyo_controlle" filename="libgazebo_ros_laser.so">
 				<topicName>${ns}/laser/scan</topicName>
-				<frameName>lms100</frameName>
+				<frameName>laser</frameName>
 			</plugin>
 		</sensor>
 	</gazebo>
