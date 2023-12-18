@@ -13,7 +13,7 @@
         <param name="maxRange"  type="double" value="30"/>
 
         <!-- Remappings-->
-        <remap from="scan" to="/sensors/laser_front/scan_filtered"/>
+        <remap from="scan" to="/p3dx/laser/scan"/>
         <remap from="map" to="/map"/>
         <remap from="map_metadata" to="/map_metadata"/>
         

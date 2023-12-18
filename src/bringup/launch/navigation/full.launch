@@ -5,8 +5,8 @@
     <arg name="use_sim_time"   default="true"/>
     <!-- <remap from="scan_multi" to="scan"/> -->
     <arg name="robot_real"     default="true"/>
-    <arg name="map_name"       default="stage_real"/>
-    <arg name="worldname"      default="stage_real"/>
+    <arg name="map_name"       default="map"/>
+    <arg name="worldname"      default="lab"/>
     <!-- <group if="$(arg robot_real)">
 
       <include file="$(find kobuki_node)/launch/robot_with_tf.launch"/>

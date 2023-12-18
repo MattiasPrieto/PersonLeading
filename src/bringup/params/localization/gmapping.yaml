@@ -7,9 +7,9 @@
 
 # wrapper parameters
 throttle_scans: 1
-base_frame: /jaime_tf/base_link
-map_frame: /map
-odom_frame: /jaime_tf/odom
+base_frame: base_link
+map_frame: map
+odom_frame: odom
 map_update_interval: 3
 
 # initial map dimensions and resolution

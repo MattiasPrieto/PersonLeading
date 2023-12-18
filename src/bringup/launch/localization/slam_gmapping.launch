@@ -1,6 +1,6 @@
 <launch>
   <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping">
-    <remap from="/scan" to ="/scan"/>
+    <remap from="scan" to ="/p3dx/laser/scan"/>
     <rosparam>
       maxUrange: 28
       base_frame: base_link
