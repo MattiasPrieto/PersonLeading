@@ -1,0 +1,19 @@
+<launch>
+
+    <!-- localization type: odometry, amcl, gmapping
+      - odometry: Just believe the odometry. Fast, but bad for large movements.
+      - amcl    : Localization algorithm, merges odometry with laser readings. Good performance.
+      - gmapping: Use this to create a new map.
+    -->
+    
+    <arg name="type"      default="amcl"/>
+    <arg name="map_name"  default="stage_real"/>
+
+
+    <!-- launch desired localization model -->
+    <include file="$(find bringup)/launch/localization/$(arg type).launch.xml">
+        <arg name="map_name" value="$(arg map_name)" />
+    </include>
+
+
+</launch>

@@ -1,0 +1,22 @@
+<launch>
+
+    <arg name="map_name"  default="DO-NOT-USE-THIS--JUST-FOR-COMPATIBILITY"/>
+
+    <!-- gmapping para slam-->
+    <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" ns="/nav/" respawn="false">
+
+        <!-- Parameters -->
+        <rosparam file="$(find bringup)/params/localization/gmapping.yaml" command="load"/>
+
+        <!-- Slam parameters (for orange hokuyo laser!)-->
+        <param name="maxUrange" type="double" value="28"/>
+        <param name="maxRange"  type="double" value="30"/>
+
+        <!-- Remappings-->
+        <remap from="scan" to="/sensors/laser_front/scan_filtered"/>
+        <remap from="map" to="/map"/>
+        <remap from="map_metadata" to="/map_metadata"/>
+        
+    </node>
+
+</launch>

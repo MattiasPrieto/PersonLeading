@@ -1,0 +1,9 @@
+<launch>
+
+    <node pkg="joy" type="joy_node" name="joy_node">
+    </node>
+    
+    <!-- <node pkg="joy_base" type="joy" name="joy_base">
+    </node> -->
+    
+</launch>

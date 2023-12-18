@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<package format="2">
+    <!-- 
+      <depend>             : build, export, and execution dependencies 
+      <build_depend>       : pkgs needed at compile time (any file or library)
+      <build_export_depend>: pkgs needed to build libraries against this pkg
+      <exec_depend>        : pkgs needed to run this code. (e.g: shared libs)
+      <test_depend>        : only additional deps for unit testing (e.g: gtest)
+      <doc_depend>         : dependencies for documentation generation
+
+      See also:
+      - http://wiki.ros.org/catkin/package.xml
+      - http://www.ros.org/reps/rep-0140.html
+    -->
+
+
+    <!-- PACKAGE INFORMATION -->
+    <!-- - - - - - - - - - - -->
+
+    <name>bringup</name>
+    <version>1.0.0</version>
+    
+    <description>Proyecto laboratorio de inteligencia</description>
+
+    <!-- team -->
+    <maintainer email="bringup@todo.todo">xd</maintainer>
+
+
+    <license>TODO</license>
+
+
+
+    <!-- SYSTEM DEPENDENCIES -->
+    <!-- - - - - - - - - - - -->
+
+    <!--  build system tool to build this package -->
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <!-- common ROS depends -->
+    <depend>roscpp</depend>
+    <depend>rospy</depend>
+    <depend>std_msgs</depend>
+    <depend>std_srvs</depend>
+
+
+    <!-- === depends on all base_ws === -->
+    <!-- common depends -->
+    <depend>description</depend>
+
+    <!-- === depends for skills === -->
+    <depend>python-mock</depend>
+    <depend>python-termcolor</depend>
+
+    <export>
+    </export>
+  
+</package>

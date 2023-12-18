@@ -1,0 +1,42 @@
+<launch>
+  <!-- Arguments -->
+    <remap from="scan" to="/p3dx/laser/scan"/>
+    <remap from="cmd_vel" to="/p3dx/cmd_vel"/>
+    <arg name="use_sim_time"   default="true"/>
+    <!-- <remap from="scan_multi" to="scan"/> -->
+    <arg name="robot_real"     default="true"/>
+    <arg name="map_name"       default="stage_real"/>
+    <arg name="worldname"      default="stage_real"/>
+    <!-- <group if="$(arg robot_real)">
+
+      <include file="$(find kobuki_node)/launch/robot_with_tf.launch"/>
+      
+      <node pkg="urg_node" type="urg_node" name="scan"/>
+      
+    </group> -->
+
+    <!-- <group unless="$(arg robot_real)">
+
+        <include file="$(find jaime_gazebo)/launch/jaime.launch">
+          <arg name="worldname" value="$(arg worldname)"/>
+        </include>
+
+        <include file="$(find merge_laser)/launch/dp2laser.launch"/>
+
+        <include file="$(find merge_laser)/launch/lasermerger.launch"/>
+
+
+    </group> -->
+    
+    <include file="$(find bringup)/launch/localization/localization.launch">
+      
+      <arg name="map_name" value="$(arg map_name)"/>
+    </include>
+
+    <include file="$(find bringup)/launch/navigation/navigation.launch">  
+      
+      <arg name="map_name" value="$(arg map_name)"/>
+    </include>
+
+</launch>
+ 

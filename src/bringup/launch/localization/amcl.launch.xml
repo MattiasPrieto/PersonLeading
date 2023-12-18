@@ -1,0 +1,15 @@
+<launch>
+
+    <arg name="map_name" default="stage_real"/>
+
+    <node pkg="map_server" type="map_server" name="map_server"
+          respawn="true" args="$(find bringup)/maps/$(arg map_name).yaml"/>
+
+    <!-- amcl -->
+    <node pkg="amcl" type="amcl" name="amcl" respawn="true" output="screen">
+        <remap from="/scan" to="/scan"/>
+        <remap from="map" to="/map"/>
+        <rosparam file="$(find bringup)/params/localization/amcl.yaml" command="load"/>
+    </node>
+
+</launch>
