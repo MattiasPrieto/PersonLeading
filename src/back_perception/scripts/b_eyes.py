@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import print_function
 
-import os  # Agrega esta importación
+import os
 import numpy as np
 np.float = np.float64
 
 import rospy
 import cv2
 from sensor_msgs.msg import Image
-from std_msgs.msg import String  # Agrega esta importación
+from std_msgs.msg import String
 from ultralytics import YOLO
 import ros_numpy as rnp
 import contextlib
@@ -16,12 +16,12 @@ import contextlib
 class_list = [0]
 
 class ImageConverter:
-    def __init__(self, scale_factor=0.02, fov_frames_threshold=3):
+    def __init__(self, scale_factor=0.02, fov_frames_threshold=15):
         self.model = YOLO('yolov8n.pt')
         rospy.loginfo('YOLOv8 is now running...')
         
         self.image_sub = rospy.Subscriber("/usb_cam/image_raw", Image, self.image_callback)
-        self.movement_pub = rospy.Publisher("/movement", String, queue_size=10)  # Crea el publicador para el tópico /movement
+        self.movement_pub = rospy.Publisher("/person_movement", String, queue_size=10)  
         
         self._image_data = None
         self.prev_bbox_x = None
@@ -30,6 +30,8 @@ class ImageConverter:
         self.scale_factor = scale_factor
         self.frames_out_of_fov = 0
         self.fov_frames_threshold = fov_frames_threshold
+        self.prev_direction = None  # Nueva variable para almacenar la dirección anterior
+        self.person_in_fov = False  # Variable para rastrear si la persona está en el FOV
 
     def image_callback(self, msg):
         seq = msg.header.seq
@@ -43,7 +45,11 @@ class ImageConverter:
                 with contextlib.redirect_stdout(fnull):
                     detections = self.model.track(self._image_data, show=True, imgsz=320, persist=True, classes=class_list, conf=0.7)
 
-            if len(detections) > 0:
+            # Verificar si hay alguna detección dentro de la región de interés (ROI)
+            if self.is_detection_in_roi(detections):
+                # Reiniciar el contador si hay detecciones
+                self.frames_out_of_fov = 0
+                
                 for i, d in enumerate(detections):
                     boxes_i = d.boxes.data
                     for b in boxes_i:
@@ -62,16 +68,24 @@ class ImageConverter:
                             print('Detected object at x: {}, y: {}. BBox size: {:.2f}. Movement direction: {}'.format(x_b, y_b, bbox_size, movement_direction))
                             # Publicar la dirección del movimiento
                             self.movement_pub.publish(movement_direction)
+                            self.person_in_fov = True  # La persona está en el FOV
 
                         # Actualizar la posición horizontal, vertical, el tamaño y la dirección anterior para la próxima iteración
                         self.prev_bbox_x = bbox_x
                         self.prev_bbox_y = bbox_y
                         self.prev_bbox_size = bbox_size
-                        self.frames_out_of_fov = 0  # Reiniciar contador cuando se detecta a la persona
+                        self.prev_direction = movement_direction  # Almacenar la dirección actual
+
+                # Verificar si la persona ha vuelto al FOV
+                if not self.person_in_fov:
+                    print('La persona ha vuelto')
+                    self.movement_pub.publish('La persona ha vuelto')
+                    self.person_in_fov = True  # Actualizar el estado de la persona en el FOV
 
             else:
-                # Incrementar el contador de frames fuera del FOV si no se detecta a la persona
-                self.frames_out_of_fov += 1
+                # Incrementar el contador de frames fuera del FOV solo si ya está fuera
+                if self.frames_out_of_fov < self.fov_frames_threshold:
+                    self.frames_out_of_fov += 1
 
                 # Verificar si la persona ha estado fuera del FOV durante el umbral de frames
                 if self.frames_out_of_fov >= self.fov_frames_threshold:
@@ -84,9 +98,7 @@ class ImageConverter:
                         print(direction)
                         # Publicar la dirección del movimiento
                         self.movement_pub.publish(direction)
-                        
-                    else:
-                        print('Persona fuera del FOV')
+                        self.person_in_fov = False  # La persona ya no está en el FOV
 
     def determine_movement(self, current_bbox_x, current_bbox_y, current_bbox_size):
         # Compara la posición horizontal y vertical actual con la posición anterior y aplica un factor de escala
@@ -99,23 +111,38 @@ class ImageConverter:
                 return 'Se acerca'
             elif size_difference < -self.scale_factor * current_bbox_size:
                 return 'Se aleja'
-            elif abs(position_difference_y) > abs(position_difference_x):
-                if position_difference_y > self.scale_factor * self._image_data.shape[0]:
-                    return 'Se mueve hacia arriba'
-                elif position_difference_y < -self.scale_factor * self._image_data.shape[0]:
-                    return 'Se mueve hacia abajo'
             else:
                 if position_difference_x > self.scale_factor * self._image_data.shape[1]:
                     return 'Se mueve a la izquierda'
                 elif position_difference_x < -self.scale_factor * self._image_data.shape[1]:
                     return 'Se mueve a la derecha'
 
+    def is_detection_in_roi(self, detections):
+        # Verificar si hay alguna detección dentro de la región de interés (ROI) que cumpla con ciertos criterios
+        for d in detections:
+            boxes_i = d.boxes.data
+            for b in boxes_i:
+                x_b, y_b, w_b, h_b = b[0:4]
+
+                # Calcular la posición horizontal y vertical del bounding box
+                bbox_x = x_b + w_b / 2
+
+                # Definir la región de interés (ROI)
+                roi_left = self._image_data.shape[1] / 4
+                roi_right = 3 * self._image_data.shape[1] / 4
+
+                # Verificar si la detección está dentro de la ROI y cumple con ciertos criterios
+                if roi_left < bbox_x < roi_right and h_b > 50:
+                    return True
+
+        return False
+
 if __name__ == '__main__':
     rospy.init_node('image_converter', anonymous=True)
     
     # Puedes ajustar estos valores según tus necesidades
-    scale_factor = 0.02
-    fov_frames_threshold = 3
+    scale_factor = 0.05
+    fov_frames_threshold = 30
     image_converter = ImageConverter(scale_factor, fov_frames_threshold)
     
     rospy.spin()
