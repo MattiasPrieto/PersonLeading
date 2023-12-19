@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /Image1
       Splitter Ratio: 0.5
     Tree Height: 276
   - Class: rviz/Selection
@@ -25,7 +26,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: Image
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -174,40 +175,6 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_link:
-          Value: true
-        camera_depth_frame:
-          Value: true
-        camera_depth_optical_frame:
-          Value: true
-        camera_link:
-          Value: true
-        center_hubcap:
-          Value: false
-        center_wheel:
-          Value: false
-        chassis:
-          Value: false
-        front_sonar:
-          Value: false
-        laser:
-          Value: true
-        map:
-          Value: true
-        odom:
-          Value: true
-        p3dx_left_hubcap:
-          Value: false
-        p3dx_left_wheel:
-          Value: false
-        p3dx_right_hubcap:
-          Value: false
-        p3dx_right_wheel:
-          Value: false
-        swivel:
-          Value: false
-        top_plate:
-          Value: false
       Marker Alpha: 1
       Marker Scale: 1
       Name: TF
@@ -215,31 +182,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        map:
-          odom:
-            base_link:
-              camera_link:
-                camera_depth_frame:
-                  camera_depth_optical_frame:
-                    {}
-              chassis:
-                {}
-              front_sonar:
-                {}
-              laser:
-                {}
-              swivel:
-                center_wheel:
-                  center_hubcap:
-                    {}
-              top_plate:
-                {}
-        p3dx_left_wheel:
-          p3dx_left_hubcap:
-            {}
-        p3dx_right_wheel:
-          p3dx_right_hubcap:
-            {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 0.699999988079071
@@ -348,7 +291,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /camera/color/image_raw
+      Image Topic: /usb_cam/image_raw
       Max Value: 1
       Median window: 5
       Min Value: 0
