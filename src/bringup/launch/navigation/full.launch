@@ -11,7 +11,7 @@
      
     <arg name="model_type" default="pioneer3dx" />
 
-    <!-- <param name="robot_description"
+    <param name="robot_description"
 		command="$(find xacro)/xacro '$(find p3dx_description)/urdf/pioneer3dx.xacro'" />
 
     <include file="$(find p3dx_control)/launch/control.launch" />
@@ -22,11 +22,11 @@
 
     <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
         <remap from="scan" to="/p3dx/laser/scan"/>
-    </node> -->
+    </node>
 
     <include file="$(find back_perception)/launch/cam.launch"/>
     
-    <!-- <include file="$(find bringup)/launch/localization/localization.launch">
+    <include file="$(find bringup)/launch/localization/localization.launch">
       
       <arg name="map_name" value="$(arg map_name)"/>
     </include>
@@ -34,7 +34,7 @@
     <include file="$(find bringup)/launch/navigation/navigation.launch">  
       
       <arg name="map_name" value="$(arg map_name)"/>
-    </include> -->
+    </include>
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find p3dx_description)/rviz/visualization.rviz" />
 
