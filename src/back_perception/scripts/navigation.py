@@ -3,7 +3,7 @@
 import rospy
 from std_msgs.msg import String
 from actionlib_msgs.msg import GoalID
-from move_base_msgs.msg import MoveBaseActionGoal
+from move_base_msgs.msg import MoveBaseActionGoal, MoveBaseActionResult
 from geometry_msgs.msg import Pose, Quaternion, Point, PoseStamped
 from std_msgs.msg import Header
 
@@ -14,6 +14,7 @@ class NavigationControll:
         self.sub_person_info = rospy.Subscriber("/person_movement", String, self.movement_callback)
         self.goal_pub = rospy.Publisher('/move_base/goal', MoveBaseActionGoal, queue_size=10)
         self.cancel_pub = rospy.Publisher('/move_base/cancel', GoalID, queue_size=10)
+        self.finish_sub = rospy.Subscriber("/move_base/result", MoveBaseActionResult, self.finish)
         
         # Variable para almacenar la ubicación objetivo
 
@@ -21,6 +22,15 @@ class NavigationControll:
 
         # Variable para almacenar la dirección anterior
         self.prev_direction = None
+
+    def finish(self, msg):
+        try:
+            result = msg.status.status
+            if result == 3:
+                rospy.signal_shutdown("We have reach our destination")
+                
+        except:
+            print("e")
 
     def movement_callback(self, data):
         movement_direction = str(data.data)
@@ -55,7 +65,7 @@ class NavigationControll:
             living_w = 0.8822794965689083
             self.go_to_goal(living_x, living_y, living_alfa, living_w)
 
-        if data.data == "hall":
+        if data.data == "center":
             hall_x = 1.2697761124184956
             hall_y = 2.364388206728983
             hall_alfa = 0.07849068656127511  # Considerando que alfa es la rotación en z

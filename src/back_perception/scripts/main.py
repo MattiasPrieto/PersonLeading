@@ -6,14 +6,14 @@ from std_msgs.msg import String
 
 path = os.path.dirname(os.path.abspath(__file__))
 import speech_recognition as sr
-
-
+from sound_play.libsoundplay import SoundClient
 
 class DestinationPlanner:
     def __init__(self):
         rospy.init_node('destination_planner', anonymous=True)
         self.destination_pub = rospy.Publisher("/target_position", String, queue_size=10)
-        self.location_list = ["kitchen", "living_room", "bedroom", "hall"]
+        self.location_list = ["kitchen", "living_room", "bedroom", "center"]
+        self.soundhandle = SoundClient()
 
     def start_voice_synthesis_node(self):
         rospy.loginfo("Starting voice synthesis node...")
@@ -26,34 +26,46 @@ class DestinationPlanner:
     def start_navigation_node(self):
         rospy.loginfo("Starting navigation node...")
         subprocess.Popen(['python3', path + '/navigation.py'])  
+    
+    def speak_message(self, message, lang="en"):
+        # Cambiar la voz predeterminada a la voz de Festival para inglés
+        self.soundhandle.voice = 'english'
+        
+        # Agregar una pausa entre palabras para mejorar la pronunciación
+        word_delay = 0.2  # Puedes ajustar este valor según sea necesario
+        if message:
+            self.soundhandle.say(message, lang=lang)
+            rospy.sleep(word_delay)
 
         
     def destination_request(self):
         recognizer = sr.Recognizer()
+        self.speak_message("Where are we going?")
 
         try:
             with sr.Microphone() as source:
-                print("Di algo...")
+                
+                print("Where are we going?")
                 recognizer.adjust_for_ambient_noise(source, duration=1)
-                recognizer.energy_threshold = 4000  # Ajusta la sensibilidad según sea necesario
+                recognizer.energy_threshold = 4000  
                 audio = recognizer.listen(source)
-
             if audio:
-                print("Reconociendo...")
+                print("Wait")
                 command = recognizer.recognize_google(audio, language="en-EN")
-                print("Texto reconocido: {}".format(command))
+                print("Destination: {}".format(command))
             else:
-                print("No se detectó audio.")
+                print("Nothing.")
 
         except sr.UnknownValueError:
-            print("No se pudo entender el audio")
+            print("Unable to process audio.")
         except sr.RequestError as e:
-            print("Error en la solicitud al servicio de reconocimiento de voz: {}".format(e))
+            print("Error: {}".format(e))
         except Exception as ex:
-            print("Error inesperado: {}".format(ex))
+            print("Unexpected Error: {}".format(ex))
 
    
-        destination = command
+        destination = command.lower()
+
         if destination in self.location_list:
             rospy.loginfo(f"Destination set to {destination}.")
             rospy.loginfo("Starting nodes...")

@@ -21,8 +21,8 @@ class VoiceSynthesizer:
             result = msg.status.status
             if result == 3:
                 self.speak_message("We have reach our destination")
-                time.sleep(0.5)
-                self.soundhandle.stopAll()
+                rospy.signal_shutdown("We have reach our destination")
+                
         except:
             print("e")
             
