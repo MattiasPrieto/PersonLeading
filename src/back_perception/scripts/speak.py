@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
 import rospy
+import os
+import time
 from std_msgs.msg import String
-from sound_play.msg import SoundRequest
+from move_base_msgs.msg import MoveBaseActionResult
 from sound_play.libsoundplay import SoundClient
+
+path = os.path.dirname(os.path.abspath(__file__))
 
 class VoiceSynthesizer:
     def __init__(self):
-        rospy.init_node('voice_synthesizer', anonymous=True)
         self.soundhandle = SoundClient()
         self.prev_direction = None  # Variable para almacenar la dirección anterior
         self.is_speaking = False  # Bandera para rastrear si se está reproduciendo un mensaje
         rospy.Subscriber("/person_movement", String, self.movement_callback)
-        rospy.spin()
+        rospy.Subscriber("/move_base/result", MoveBaseActionResult, self.finish)
+    
+    def finish(self, msg):
+        try:
+            result = msg.status.status
+            if result == 3:
+                self.speak_message("We have reach our destination")
+                time.sleep(0.5)
+                self.soundhandle.stopAll()
+        except:
+            print("e")
+            
 
     def movement_callback(self, data):
         movement_direction = str(data.data)
@@ -44,9 +58,10 @@ class VoiceSynthesizer:
         if message:
             self.soundhandle.say(message, lang=lang)
             rospy.sleep(word_delay)
+def main():
+    rospy.init_node('voice_synthesizer', anonymous=True)
+    VoiceSynthesizer()
+    rospy.spin()
 
 if __name__ == '__main__':
-    try:
-        VoiceSynthesizer()
-    except rospy.ROSInterruptException:
-        pass
+    main()

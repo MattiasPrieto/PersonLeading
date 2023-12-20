@@ -10,33 +10,28 @@ from std_msgs.msg import Header
 class NavigationControll:
     def __init__(self):
         rospy.init_node('NavigationControll')
-        self.got_to = rospy.Subscriber('/destino', String, self.goal)
+        self.got_to = rospy.Subscriber('/target_position', String, self.goal)
         self.sub_person_info = rospy.Subscriber("/person_movement", String, self.movement_callback)
-        self.subscriber_current_goal = rospy.Subscriber('/move_base/current_goal', PoseStamped, self.callback_current_goal)
         self.goal_pub = rospy.Publisher('/move_base/goal', MoveBaseActionGoal, queue_size=10)
+        self.cancel_pub = rospy.Publisher('/move_base/cancel', GoalID, queue_size=10)
         
-        self.current_x = 0.0
-        self.current_y = 0.0
-        self.current_alfa = 0.0
-        self.current_w = 0.0
+        # Variable para almacenar la ubicación objetivo
 
-        # Variables para guardar la posición
-        self.saved_x = 0.0
-        self.saved_y = 0.0
-        self.saved_alfa = 0.0
-        self.saved_w = 0.0
+        self.destino = ""
 
         # Variable para almacenar la dirección anterior
         self.prev_direction = None
 
     def movement_callback(self, data):
         movement_direction = str(data.data)
-
         # Determinar el mensaje basado en la dirección del movimiento
         if "aleja" in movement_direction.lower() and self.prev_direction != "aleja":
             self.cancel_navigation()
         elif "vuelto" in movement_direction.lower() or "acerca" in movement_direction.lower() and self.prev_direction != "acerca":
-            self.resume_navigation(self.current_x, self.current_y, self.current_alfa)
+            try:
+                self.goal(self.destino)
+            except:
+                rospy.sleep(1)
         elif "fue" in movement_direction.lower() and self.prev_direction != "fue":
             self.cancel_navigation()
         else:
@@ -46,17 +41,13 @@ class NavigationControll:
         self.prev_direction = "vuelto" if "vuelto" in movement_direction.lower() else "fue" if "fue" in movement_direction.lower() else "acerca" if "acerca" in movement_direction.lower() else "aleja" if "aleja" in movement_direction.lower() else None
 
     def cancel_navigation(self):
-        cancel_msg = GoalID(stamp=rospy.Time(secs=0, nsecs=0), id='')
-        cancel_pub = rospy.Publisher('/move_base/cancel', GoalID, queue_size=10)
-        cancel_pub.publish(cancel_msg)
-
-    def callback_current_goal(self, data):
-        self.current_x = data.pose.position.x
-        self.current_y = data.pose.position.y  # Corregido: debería ser la coordenada y
-        self.current_alfa = data.pose.orientation.z
-        self.current_w = data.pose.orientation.w
+        cancel_msg = GoalID(stamp=rospy.Time(secs=0, nsecs=0), id='')   
+        self.cancel_pub.publish(cancel_msg)
 
     def goal(self, data):
+
+        self.destino = data
+
         if data.data == "living":
             living_x = 0.605769076842279
             living_y = 4.427216976628204
@@ -85,19 +76,6 @@ class NavigationControll:
             pieza_w = 0.538539893718615
             self.go_to_goal(pieza_x, pieza_y, pieza_alfa, pieza_w)
 
-        if data.data == "otra cosa":
-            x = self.saved_x
-            y = self.saved_y
-            alfa = self.saved_alfa
-            w = self.saved_w
-            self.go_to_goal(x, y, alfa, w)
-
-    def save_goal(self):
-        self.saved_x = self.current_x
-        self.saved_y = self.current_y
-        self.saved_alfa = self.current_alfa
-        self.saved_w = self.current_w
-
     def go_to_goal(self, x, y, alfa, w):
         goal_msg = MoveBaseActionGoal()
         goal_msg.goal.target_pose.header = Header(frame_id="map")
@@ -108,18 +86,6 @@ class NavigationControll:
 
         # Publica el mensaje en el tópico /move_base/goal
         self.goal_pub.publish(goal_msg)
-
-    def resume_navigation(self, x, y, alfa):
-        goal = PoseStamped()
-        goal.pose.position.x = x
-        goal.pose.position.y = y
-        goal.pose.orientation.z = alfa
-
-        # Publica el mensaje en el tópico /move_base/goal
-        self.goal_pub.publish(goal)
-
-        # Añade una pausa para dar tiempo al sistema para procesar la solicitud
-        rospy.sleep(1)
 
 def main():
     NavigationControll()

@@ -1,51 +1,77 @@
 #!/usr/bin/env python3
 import rospy
+import os
 import subprocess
 from std_msgs.msg import String
+
+path = os.path.dirname(os.path.abspath(__file__))
+import speech_recognition as sr
+
+
 
 class DestinationPlanner:
     def __init__(self):
         rospy.init_node('destination_planner', anonymous=True)
-        self.destination_pub = rospy.Publisher("/destino", String, queue_size=10)
+        self.destination_pub = rospy.Publisher("/target_position", String, queue_size=10)
         self.location_list = ["kitchen", "living_room", "bedroom", "hall"]
-        rospy.Subscriber("/destination_request", String, self.destination_request_callback)
-
-    def start_camera_node(self):
-        rospy.loginfo("Starting camera node...")
-        subprocess.Popen(['python3', 'b_eyes.py'])  # Reemplaza 'b_eyes.py' con tu nombre de archivo
 
     def start_voice_synthesis_node(self):
         rospy.loginfo("Starting voice synthesis node...")
-        subprocess.Popen(['python3', 'speak.py'])  # Reemplaza 'speak.py' con tu nombre de archivo
+        subprocess.Popen(['python3', path + '/speak.py'])  
+
+    def start_camera_node(self):
+        rospy.loginfo("Starting camera node...")
+        subprocess.Popen(['python3', path + '/b_eyes.py'])  
 
     def start_navigation_node(self):
         rospy.loginfo("Starting navigation node...")
-        subprocess.Popen(['python3', 'navigation.py'])  # Reemplaza 'joy_base.py' con tu nombre de archivo
+        subprocess.Popen(['python3', path + '/navigation.py'])  
 
-    def destination_request_callback(self, data):
-        destination_request = data.data
+        
+    def destination_request(self):
+        recognizer = sr.Recognizer()
 
-        if destination_request == "where are we going?":
-            rospy.loginfo("Destination request received.")
-            
-            # Puedes agregar lógica para determinar la ubicación actual del robot
-            rospy.loginfo("Please enter the destination: ")
-            destination = input()
+        try:
+            with sr.Microphone() as source:
+                print("Di algo...")
+                recognizer.adjust_for_ambient_noise(source, duration=1)
+                recognizer.energy_threshold = 4000  # Ajusta la sensibilidad según sea necesario
+                audio = recognizer.listen(source)
 
-            if destination in self.location_list:
-                rospy.loginfo(f"Destination set to {destination}.")
-                self.destination_pub.publish(destination)
-                rospy.loginfo("Starting nodes...")
-                self.start_camera_node()
-                self.start_voice_synthesis_node()
-                self.start_navigation_node()
-                rospy.loginfo("Nodes started.")
+            if audio:
+                print("Reconociendo...")
+                command = recognizer.recognize_google(audio, language="en-EN")
+                print("Texto reconocido: {}".format(command))
             else:
-                rospy.loginfo("I don't know how to get there.")
+                print("No se detectó audio.")
+
+        except sr.UnknownValueError:
+            print("No se pudo entender el audio")
+        except sr.RequestError as e:
+            print("Error en la solicitud al servicio de reconocimiento de voz: {}".format(e))
+        except Exception as ex:
+            print("Error inesperado: {}".format(ex))
+
+   
+        destination = command
+        if destination in self.location_list:
+            rospy.loginfo(f"Destination set to {destination}.")
+            rospy.loginfo("Starting nodes...")
+            self.start_camera_node()
+            self.start_voice_synthesis_node()
+            self.start_navigation_node()
+            rospy.loginfo("Nodes started.")
+            rospy.sleep(1)
+            self.destination_pub.publish(destination)
+            rospy.loginfo("Given destination.")
+        else:
+            rospy.loginfo("I don't know how to get there.")
+            return DestinationPlanner.destination_request(self)
 
 if __name__ == '__main__':
     try:
-        DestinationPlanner()
+        planner = DestinationPlanner()
+        planner.destination_request()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass

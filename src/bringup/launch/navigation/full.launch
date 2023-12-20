@@ -16,7 +16,7 @@
 
     <include file="$(find p3dx_control)/launch/control.launch" />
 
-    <include file="$(find joy_base)/launch/joy.launch"/> 
+    <!-- <include file="$(find joy_base)/launch/joy.launch"/>  -->
 
     <node pkg="rosaria" type="RosAria" name="p3dx"/>
 

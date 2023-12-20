@@ -16,8 +16,8 @@ class JoyControll:
         self.publisher = rospy.Publisher('/p3dx/cmd_vel', Twist, queue_size=10)
         self.subscriber_current_goal = rospy.Subscriber('/move_base/current_goal',PoseStamped, self.callback_current_goal)
         self.goal_pub = rospy.Publisher('/move_base/goal', MoveBaseActionGoal, queue_size=10)
-        self.camera_info =     rospy.Subscriber('/person_info', String, status)
-        self.got_to =     rospy.Subscriber('/goal_str', String, goal)
+        self.camera_info =     rospy.Subscriber('/person_info', String, self.status)
+        self.got_to =     rospy.Subscriber('/goal_str', String, self.goal)
 
         self.current_x = 0.0
         self.current_y = 0.0
@@ -140,7 +140,7 @@ class JoyControll:
         self.current_w = data.pose.orientation.w
 
     
-    def status(self,data)
+    def status(self,data):
         
         if data == "cosa":
             #first save the  current goal
